@@ -1,8 +1,8 @@
-# AGENT_NAME
+# {{AGENT_NAME}}
 
 ## Identity
-- **Name:** AGENT_NAME
-- **Port:** AGENT_PORT
+- **Name:** {{AGENT_NAME}}
+- **Port:** {{AGENT_PORT}}
 
 ## Personality
 _Define your agent's personality here._

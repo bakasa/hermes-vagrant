@@ -69,13 +69,7 @@ Vagrant.configure("2") do |config|
 
       ── Synced folders ──
       # Agent identity & config → guest Hermes home
-      agent.vm.synced_folder "./agents/#{name}/soul/", "/home/hermes/.hermes/", create: true
-      # Agent skills → guest skills directory
-      agent.vm.synced_folder "./agents/#{name}/skills/", "/home/hermes/.hermes/skills/", create: true
-      # Agent cron jobs → guest cron directory
-      agent.vm.synced_folder "./agents/#{name}/cron/", "/home/hermes/.hermes/cron/", create: true
-      # Agent scripts
-      agent.vm.synced_folder "./agents/#{name}/scripts/", "/home/hermes/scripts/", create: true
+      agent.vm.synced_folder "./agents/#{name}/", "/home/hermes/.hermes/", create: true
       # Handoff directory — shared between all VMs
       agent.vm.synced_folder "/data/handoffs", "/data/handoffs", create: true
 
@@ -130,7 +124,7 @@ Vagrant.configure("2") do |config|
 
         # Setup Hermes home
         mkdir -p /home/hermes/.hermes/{skills,cron,research,memories,logs}
-        cp -r /home/vagrant/Vagrantfile/soul/* /home/hermes/.hermes/ 2>/dev/null || true
+        cp -r /vagrant/agents/#{name}/* /home/hermes/.hermes/ 2>/dev/null || true
         chown -R hermes:hermes /home/hermes
 
         echo "═══ [#{name}] Base provisioning complete ═══"

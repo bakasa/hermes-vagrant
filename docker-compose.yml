@@ -1,5 +1,3 @@
-version: "3.8"
-
 # Hermes Multi-Agent Crew — Docker Compose
 # Central orchestration for all Hermes agents.
 # Each agent runs in its own container with its own SOUL.md, config, skills, and cron.
@@ -29,6 +27,13 @@ x-hermes-env: &hermes-env
   GITHUB_TOKEN: ${GITHUB_TOKEN:-}
   OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
 
+# ── Healthcheck is the same for every agent: shell-form so `||` works ──
+x-health: &health
+  test: ["CMD-SHELL", "curl -sf http://localhost:$${GATEWAY_PORT:-3000}/health || exit 0"]
+  interval: 90s
+  timeout: 10s
+  retries: 3
+
 services:
 
   # ═══════════════════════════════════════════
@@ -55,10 +60,7 @@ services:
       - shared-handoffs:/data/handoffs:rw
       - main-data:/data/.hermes:rw
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health", "||", "exit", "0"]
-      interval: 60s
-      timeout: 10s
-      retries: 3
+      <<: *health
 
   # ═══════════════════════════════════════════
   # Research Agent — Evidence Vault
@@ -85,10 +87,7 @@ services:
       - shared-handoffs:/data/handoffs:rw
       - research-data:/data/.hermes:rw
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3001/health", "||", "exit", "0"]
-      interval: 120s
-      timeout: 10s
-      retries: 3
+      <<: *health
 
   # ═══════════════════════════════════════════
   # Subconscious Agent — Pattern Incubator
@@ -112,10 +111,7 @@ services:
       - shared-handoffs:/data/handoffs:rw
       - subconscious-data:/data/.hermes:rw
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3002/health", "||", "exit", "0"]
-      interval: 180s
-      timeout: 10s
-      retries: 3
+      <<: *health
 
   # ═══════════════════════════════════════════
   # Coder Agent — Build & Ship
@@ -140,12 +136,9 @@ services:
     volumes:
       - shared-handoffs:/data/handoffs:rw
       - coder-data:/data/.hermes:rw
-      - coder-repos:/data/workspace:rw
+      - coder-repos:/data/hermes-coder/workspace:rw
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3003/health", "||", "exit", "0"]
-      interval: 120s
-      timeout: 10s
-      retries: 3
+      <<: *health
 
   # ═══════════════════════════════════════════
   # QA Agent — Quality Gate
@@ -168,12 +161,9 @@ services:
     volumes:
       - shared-handoffs:/data/handoffs:rw
       - qa-data:/data/.hermes:rw
-      - coder-repos:/data/workspace:ro
+      - coder-repos:/data/hermes-coder/workspace:ro
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3004/health", "||", "exit", "0"]
-      interval: 120s
-      timeout: 10s
-      retries: 3
+      <<: *health
 
   # ═══════════════════════════════════════════
   # Alim Agent — Islamic Studies Companion
@@ -199,10 +189,7 @@ services:
       - shared-handoffs:/data/handoffs:rw
       - alim-data:/data/.hermes:rw
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3005/health", "||", "exit", "0"]
-      interval: 180s
-      timeout: 10s
-      retries: 3
+      <<: *health
 
 # ═══════════════════════════════════════════════
 # Shared Volumes

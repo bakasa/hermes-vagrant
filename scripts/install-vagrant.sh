@@ -200,7 +200,7 @@ main() {
   log "Docker:   $(docker --version 2>/dev/null || echo 'not started')"
   log ""
   log "Next steps:"
-  log "  1. Copy .env files to agents/<name>/soul/.env"
+  log "  1. Copy .env files to agents/<name>/.env"
   log "  2. vagrant up"
   log "  3. vagrant ssh hermes-main"
 

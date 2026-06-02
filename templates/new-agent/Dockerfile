@@ -1,17 +1,14 @@
-# AGENT_NAME — Hermes Agent
-# Replace AGENT_NAME with your actual agent name
-
-ARG AGENT_NAME=agent
-ARG AGENT_PORT=3006
-ARG AGENT_ROLE="Hermes Agent"
+# Template for new Hermes agent
+# Placeholders: {{AGENT_NAME}}, {{AGENT_PORT}}, {{AGENT_ROLE}}
+# These are replaced by scripts/add-agent.sh — NOT Docker ARGs.
 
 FROM debian:bookworm-slim
 
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 \
-    AGENT_NAME=${AGENT_NAME} \
-    GATEWAY_PORT=${AGENT_PORT} \
-    AGENT_ROLE=${AGENT_ROLE} \
+    AGENT_NAME={{AGENT_NAME}} \
+    GATEWAY_PORT={{AGENT_PORT}} \
+    AGENT_ROLE={{AGENT_ROLE}} \
     HERMES_HOME=/data/.hermes \
     TZ=UTC
 
@@ -34,9 +31,9 @@ COPY --chown=hermes:hermes . /data/agent/
 USER hermes
 WORKDIR /data/agent
 
-EXPOSE ${AGENT_PORT}
+EXPOSE {{AGENT_PORT}}
 
 HEALTHCHECK --interval=60s --timeout=10s --retries=3 \
-    CMD curl -f http://localhost:${AGENT_PORT}/health || exit 0
+    CMD-SHELL curl -sf http://localhost:{{AGENT_PORT}}/health || exit 0
 
-CMD ["hermes", "gateway", "start", "--port", "${AGENT_PORT}"]
+CMD ["hermes", "gateway", "start", "--port", "{{AGENT_PORT}}"]

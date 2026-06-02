@@ -101,7 +101,7 @@ done
 
 # ── Summary ──
 if $all_valid; then
-  echo -e "${GREEN}${all_valid} All agents valid ✓${NC}"
+  echo -e "${GREEN}All agents valid ✓${NC}"
 else
   echo -e "${RED}Some agents have issues. Fix before deploying.${NC}"
   exit 1

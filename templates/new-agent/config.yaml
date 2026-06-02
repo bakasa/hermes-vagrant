@@ -1,6 +1,6 @@
 agent:
-  name: AGENT_NAME
-  role: "Hermes Agent"
+  name: {{AGENT_NAME}}
+  role: "{{AGENT_ROLE}}"
   soul: "./SOUL.md"
 
 model:
@@ -8,7 +8,7 @@ model:
   default: "openrouter/auto"
 
 gateway:
-  port: AGENT_PORT
+  port: {{AGENT_PORT}}
   bind: "0.0.0.0"
 
 paths:

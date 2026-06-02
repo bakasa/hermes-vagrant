@@ -241,7 +241,7 @@ cmd_doctor() {
   echo ""
   echo "  Agent configs:"
   for agent in "${AGENTS[@]}"; do
-    if [ -f "agents/${agent}/soul/SOUL.md" ]; then
+    if [ -f "agents/${agent}/SOUL.md" ]; then
       echo -e "    ${GREEN}✓${NC} ${agent}: SOUL.md present"
     else
       echo -e "    ${YELLOW}⚠${NC} ${agent}: no SOUL.md (will use default)"
