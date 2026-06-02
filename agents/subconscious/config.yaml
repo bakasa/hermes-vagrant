@@ -1,0 +1,15 @@
+model:
+  provider: openrouter
+  default: openrouter/owl-alpha
+
+gateway:
+  strict: false
+  port: 3002
+
+subconscious:
+  scan_interval_hours: 4
+  dream_log_path: "dreams"
+  max_patterns_per_scan: 10
+  insight_threshold: medium  # minimum confidence to forward to main
+
+handoff_dir: /data/handoffs

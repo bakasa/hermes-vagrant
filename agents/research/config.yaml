@@ -1,0 +1,18 @@
+model:
+  provider: openrouter
+  default: openrouter/owl-alpha
+
+gateway:
+  strict: false
+  port: 3001
+
+research:
+  feeds:
+    huggingface: "https://huggingface.co/blog/feed.xml"
+    import_ai: "https://importai.substack.com/feed"
+    bair: "https://bair.berkeley.edu/blog/feed.xml"
+  max_results_per_scan: 20
+  dossier_path: "vault/dossiers"
+  scan_interval_hours: 6
+
+handoff_dir: /data/handoffs

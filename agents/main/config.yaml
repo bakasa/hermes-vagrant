@@ -1,0 +1,32 @@
+model:
+  provider: openrouter
+  default: openrouter/owl-alpha
+
+slack:
+  require_mention: true
+  free_response_channels: ''
+  allowed_channels: ''
+  channel_prompts: {}
+
+gateway:
+  strict: false
+  port: 3000
+
+agents:
+  - name: research
+    host: 192.168.56.11
+    port: 3001
+  - name: subconscious
+    host: 192.168.56.12
+    port: 3002
+  - name: coder
+    host: 192.168.56.13
+    port: 3003
+  - name: qa
+    host: 192.168.56.14
+    port: 3004
+  - name: alim
+    host: 192.168.56.15
+    port: 3005
+
+handoff_dir: /data/handoffs

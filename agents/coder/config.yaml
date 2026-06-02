@@ -1,0 +1,20 @@
+model:
+  provider: openrouter
+  default: openrouter/owl-alpha
+
+gateway:
+  strict: false
+  port: 3003
+
+coder:
+  workspace: /data/workspace
+  sandbox_mode: true
+  max_parallel_tasks: 4
+  git:
+    auto_commit: true
+    auto_push: false  # require human approval before push
+  claude_code:
+    enabled: true
+    oauth_token_env: CLAUDE_CODE_OAUTH_TOKEN
+
+handoff_dir: /data/handoffs

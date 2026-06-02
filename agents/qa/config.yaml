@@ -1,0 +1,22 @@
+model:
+  provider: openrouter
+  default: openrouter/owl-alpha
+
+gateway:
+  strict: false
+  port: 3004
+
+qa:
+  workspace: /data/workspace
+  workspace_mount: ro  # read-only
+  test_patterns:
+    - "pytest"
+    - "npm test"
+    - "go test"
+    - "cargo test"
+  verdict_options:
+    - PASS
+    - CONDITIONAL_PASS
+    - FAIL
+
+handoff_dir: /data/handoffs

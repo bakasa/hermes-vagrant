@@ -1,0 +1,23 @@
+model:
+  provider: openrouter
+  default: openrouter/owl-alpha
+
+gateway:
+  strict: false
+  port: 3005
+
+alim:
+  knowledge_base:
+    quran: true
+    hadith: true
+    fiqh: true
+    tafsir: true
+    seerah: true
+  citation_format: standard  # standard | detailed
+  default_madhhab: general  # hanafi | maliki | shafi'i | hanbali | general
+  google_classroom:
+    enabled: false
+    credentials_path: "google_credentials.json"
+    token_path: "google_token.json"
+
+handoff_dir: /data/handoffs

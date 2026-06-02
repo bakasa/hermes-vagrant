@@ -1,0 +1,42 @@
+# Hermes Vagrant — Ignore patterns
+
+# Secrets
+**/.env
+**/*.pem
+**/*.key
+**/google_credentials.json
+**/google_token.json
+**/auth.json
+
+# Vagrant
+.vagrant/
+*.box
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# Node
+node_modules/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Logs
+*.log
+logs/
+
+# Temp
+/tmp/
+*.tmp
