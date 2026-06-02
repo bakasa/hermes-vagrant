@@ -1,0 +1,55 @@
+# === Secrets & Credentials ===
+.env
+.env.*
+*.pem
+*.key
+*credentials*
+*secret*
+openrouter_api_key
+.anthropic_key
+
+# === Python ===
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+.venv/
+venv/
+env/
+
+# === Node ===
+node_modules/
+npm-debug.log*
+
+# === Workspace Build Artifacts ===
+workspace/
+**/*.o
+**/*.so
+**/*.dll
+**/*.exe
+**/*.class
+**/target/
+**/.next/
+**/out/
+**/dist/
+**/build/
+
+# === IDE ===
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# === OS ===
+.DS_Store
+Thumbs.db
+
+# === Hermes ===
+*.session
+*.log
+hermes-gateway.sock

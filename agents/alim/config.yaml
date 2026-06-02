@@ -1,23 +1,78 @@
-model:
-  provider: openrouter
-  default: openrouter/owl-alpha
+# Alim Agent — Hermes Configuration
+# An Islamic studies companion for Alimiyyah program students
+
+agent:
+  name: "alim-agent"
+  display_name: "Alim Agent"
+  description: "Islamic studies companion for Alimiyyah program students — syncs with Google Classroom, builds knowledge base, assists with assignments, tests, and scholarly questions."
+  version: "1.0.0"
+  soul: "SOUL.md"
+  soul_interval: 0  # Load SOUL.md every session (0 = always)
+  knowledge_dir: "knowledge"
+  language: "en"
+
+provider:
+  name: "openrouter"
+  api_key_env: "OPENROUTER_API_KEY"
+  base_url: "https://openrouter.ai/api/v1"
+  model: "anthropic/claude-sonnet-4-20250513"
+  # Model can be overridden via ALIM_MODEL env var
+  max_tokens: 8192
+  temperature: 0.3  # Lower temp for scholarly accuracy
 
 gateway:
-  strict: false
   port: 3005
+  host: "0.0.0.0"
+  cors_origins:
+    - "http://localhost:3005"
+    - "http://localhost:3000"
 
-alim:
-  knowledge_base:
-    quran: true
-    hadith: true
-    fiqh: true
-    tafsir: true
-    seerah: true
-  citation_format: standard  # standard | detailed
-  default_madhhab: general  # hanafi | maliki | shafi'i | hanbali | general
-  google_classroom:
-    enabled: false
-    credentials_path: "google_credentials.json"
-    token_path: "google_token.json"
+# Google Classroom Integration
+google_classroom:
+  enabled: true
+  credentials_file: "google_credentials.json"
+  token_file: "google_token.json"
+  scopes:
+    - "https://www.googleapis.com/auth/classroom.courses.readonly"
+    - "https://www.googleapis.com/auth/classroom.announcements.readonly"
+    - "https://www.googleapis.com/auth/classroom.coursework.students.readonly"
+    - "https://www.googleapis.com/auth/classroom.courseworkmaterials.readonly"
+  sync_interval_minutes: 60
+  default_timezone: "UTC"
 
-handoff_dir: /data/handoffs
+# Knowledge Base Settings
+knowledge_base:
+  enabled: true
+  directory: "knowledge"
+  index_file: "knowledge/_index.json"
+  auto_index: true
+  max_file_size_mb: 5
+  subjects:
+    - "aqeedah"
+    - "fiqh"
+    - "usul-al-fiqh"
+    - "hadith-sciences"
+    - "seerah"
+    - "tafsir"
+    - "arabic"
+    - "ulum-al-quran"
+    - "general"
+
+# Cron / Scheduled Tasks
+cron:
+  enabled: true
+  jobs_file: "cron/jobs.json"
+  timezone: "UTC"
+
+# Assets
+assets:
+  skills: "skills"
+  cron: "cron"
+  plugins: "plugins"
+  memories: "memories"
+
+# Logging
+logging:
+  level: "INFO"
+  format: "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+  file: "logs/alim-agent.log"

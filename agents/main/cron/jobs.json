@@ -1,0 +1,64 @@
+{
+  "_comment": "OWL Cron Jobs — Scheduled monitoring and maintenance tasks",
+  "version": "1",
+  "jobs": [
+    {
+      "name": "monitor-handoffs-incoming",
+      "description": "Scan the incoming handoff directory every 5 minutes for new tasks from agents",
+      "schedule": "*/5 * * * *",
+      "action": "scan_directory",
+      "config": {
+        "directory": "/data/handoffs/incoming",
+        "pattern": "*.md",
+        "handler": "route_incoming_task"
+      }
+    },
+    {
+      "name": "monitor-handoffs-outgoing",
+      "description": "Check outgoing handoffs for stalled tasks that agents haven't picked up",
+      "schedule": "*/5 * * * *",
+      "action": "scan_directory",
+      "config": {
+        "directory": "/data/handoffs/outgoing",
+        "pattern": "*.md",
+        "stale_threshold_minutes": 60,
+        "handler": "escalate_stalled_tasks"
+      }
+    },
+    {
+      "name": "monitor-handoffs-failed",
+      "description": "Check failed handoff directory and retry or reassign failed tasks",
+      "schedule": "*/5 * * * *",
+      "action": "scan_directory",
+      "config": {
+        "directory": "/data/handoffs/failed",
+        "pattern": "*.md",
+        "max_retries": 3,
+        "handler": "retry_or_reassign"
+      }
+    },
+    {
+      "name": "cleanup-completed",
+      "description": "Archive completed handoffs older than 24 hours",
+      "schedule": "0 2 * * *",
+      "action": "cleanup",
+      "config": {
+        "directory": "/data/handoffs/completed",
+        "archive_after_hours": 24,
+        "handler": "archive_old_handoffs"
+      }
+    },
+    {
+      "name": "healthcheck-gateway",
+      "description": "Verify the gateway HTTP endpoint is responsive",
+      "schedule": "*/2 * * * *",
+      "action": "http_check",
+      "config": {
+        "url": "http://localhost:3000/health",
+        "expected_status": 200,
+        "timeout_seconds": 10,
+        "handler": "alert_on_failure"
+      }
+    }
+  ]
+}

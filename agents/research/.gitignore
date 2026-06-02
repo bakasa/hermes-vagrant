@@ -1,0 +1,49 @@
+# Hermes Research Agent — .gitignore
+
+# Environment & secrets
+.env
+.env.*
+auth.json
+tokens/
+*.token
+*.key
+*.pem
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+.eggs/
+.venv/
+venv/
+env/
+
+# Hermes runtime
+.hermes/cache/
+.hermes/logs/
+.hermes/tmp/
+
+# Research vault — keep structure, ignore large data files
+.hermes/research/vault/**/*.json
+!.hermes/research/vault/**/.gitkeep
+.hermes/research/vault/dossiers/*.md
+.handoff-cache/
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE
+.vscode/
+.idea/
+*.sublime-*
+
+# Docker
+docker-compose.override.yml

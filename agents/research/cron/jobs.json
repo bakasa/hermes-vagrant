@@ -1,0 +1,131 @@
+{
+  "version": "1.0",
+  "agent": "research",
+  "jobs": [
+    {
+      "id": "research-daily-scan",
+      "name": "Daily Research Scan",
+      "description": "Full scan of all RSS feeds, arXiv, and search queries. Generates daily digest.",
+      "schedule": {
+        "cron": "0 6 * * *",
+        "timezone": "UTC"
+      },
+      "enabled": true,
+      "workflow": {
+        "steps": [
+          "Load feed-list.md and validate feeds",
+          "Scan all RSS feeds for new entries since last scan",
+          "Query arXiv API for recent papers in configured categories",
+          "Run configured search queries from search-queries.md",
+          "Extract findings from all sources",
+          "Evaluate and tag all findings",
+          "Check for claim conflicts and contradictions",
+          "Update source reliability scores",
+          "Update relevant dossiers",
+          "Generate daily digest",
+          "Route digest to main agent via handoff",
+          "Route urgent signals to respective agents",
+          "Log scan metadata"
+        ]
+      },
+      "output": {
+        "digest_path": "vault/digests/{date}-daily-digest.md",
+        "findings_path": "vault/findings/",
+        "handoff_path": "/data/handoffs/"
+      },
+      "timeout_minutes": 30,
+      "retry_policy": {
+        "max_retries": 2,
+        "backoff_seconds": 60
+      }
+    },
+    {
+      "id": "research-extract-cycle",
+      "name": "Extract Cycle — Signal Processing",
+      "description": "Lightweight 6-hour scan for new signals, claim cross-referencing, and urgent routing.",
+      "schedule": {
+        "cron": "0 */6 * * *",
+        "timezone": "UTC"
+      },
+      "enabled": true,
+      "workflow": {
+        "steps": [
+          "Check for new entries since last scan/extract",
+          "Extract key claims from new findings",
+          "Cross-reference against existing claims in vault",
+          "Flag contradictions and confirmations",
+          "Route urgent signals immediately to target agents",
+          "Queue non-urgent items for next daily scan",
+          "Update processing timestamp"
+        ]
+      },
+      "output": {
+        "claims_path": "vault/claims/",
+        "handoff_path": "/data/handoffs/"
+      },
+      "timeout_minutes": 15,
+      "retry_policy": {
+        "max_retries": 1,
+        "backoff_seconds": 30
+      }
+    },
+    {
+      "id": "research-dossier-update",
+      "name": "Weekly Dossier Maintenance",
+      "description": "Review and update all active dossiers. Archive stale findings.",
+      "schedule": {
+        "cron": "0 8 * * 0",
+        "timezone": "UTC"
+      },
+      "enabled": true,
+      "workflow": {
+        "steps": [
+          "List all active dossiers",
+          "For each dossier: check for new findings since last update",
+          "Update executive summaries with new evidence",
+          "Create new dossiers if topics have 3+ unassigned findings",
+          "Archive findings older than 90 days",
+          "Retire superseded claims",
+          "Update source reliability scores",
+          "Generate maintenance report"
+        ]
+      },
+      "output": {
+        "dossiers_path": "vault/dossiers/",
+        "report_path": "vault/digests/{date}-weekly-maintenance.md"
+      },
+      "timeout_minutes": 20,
+      "retry_policy": {
+        "max_retries": 1,
+        "backoff_seconds": 60
+      }
+    },
+    {
+      "id": "source-health-check",
+      "name": "Source Health Check",
+      "description": "Validate all RSS feeds are responding. Mark dead feeds.",
+      "schedule": {
+        "cron": "0 5 * * *",
+        "timezone": "UTC"
+      },
+      "enabled": true,
+      "workflow": {
+        "steps": [
+          "Load feed-list.md",
+          "Ping each feed URL with HEAD request",
+          "Record response time and status code",
+          "Mark feeds with 5+ consecutive failures as DEAD",
+          "Log health check results",
+          "Include dead feed count in next daily digest"
+        ]
+      },
+      "output": {
+        "health_log": "vault/sources/health-check-{date}.json"
+      },
+      "timeout_minutes": 10,
+      "retry_policy": {
+        "max_retries": 0
+      }
+    }
+  ]
+}

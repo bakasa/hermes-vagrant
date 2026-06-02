@@ -1,0 +1,34 @@
+{
+  "jobs": [
+    {
+      "id": "check-handoff-tasks",
+      "name": "Check for new handoff tasks",
+      "description": "Poll for incoming task briefs from Main Agent and build signals from Research. Process any pending work items.",
+      "schedule": "*/30 * * * *",
+      "enabled": true,
+      "agent": {
+        "prompt": "Check for new handoff tasks. Look for any incoming task briefs from Main Agent or build signals from Research in the standard input channels or task queue. For each new task found, validate it, plan the implementation, and begin the build/ship cycle as defined in skills/coder-agent/SKILL.md. Report status of all processed tasks."
+      }
+    },
+    {
+      "id": "health-report",
+      "name": "Periodic health report",
+      "description": "Report current status of active tasks, open PRs, and any blockers to Main Agent.",
+      "schedule": "0 * * * *",
+      "enabled": true,
+      "agent": {
+        "prompt": "Generate a health report summarizing: current active tasks and their phase, open PRs and their review status, any blocked items that need escalation, and the last completed task. Keep it concise. Report to Main Agent."
+      }
+    },
+    {
+      "id": "pr-followup",
+      "name": "Follow up on open PRs",
+      "description": "Check open PRs for new review comments, CI status, or merge readiness.",
+      "schedule": "0 */2 * * *",
+      "enabled": true,
+      "agent": {
+        "prompt": "Follow up on all open PRs managed by Coder Agent. Check for: new review comments that need addressing, CI status (pass/fail/flaky), approvals received, and merge readiness. Take appropriate action (fix comments, rerun tests, merge if green). Report outcomes."
+      }
+    }
+  ]
+}

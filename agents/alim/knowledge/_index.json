@@ -1,0 +1,26 @@
+{
+  "version": "1.0.0",
+  "created": "2025-01-01T00:00:00Z",
+  "last_updated": "2025-01-01T00:00:00Z",
+  "entries": [],
+  "subjects": {
+    "aqeedah": {"files": [], "count": 0},
+    "fiqh": {"files": [], "count": 0},
+    "usul-al-fiqh": {"files": [], "count": 0},
+    "hadith-sciences": {"files": [], "count": 0},
+    "seerah": {"files": [], "count": 0},
+    "tafsir": {"files": [], "count": 0},
+    "arabic": {"files": [], "count": 0},
+    "ulum-al-quran": {"files": [], "count": 0},
+    "general": {"files": [], "count": 0}
+  },
+  "glossary": {
+    "file": "_glossary/terms.json",
+    "count": 0
+  },
+  "classroom": {
+    "file": "_classroom/courses.json",
+    "last_sync": null,
+    "count": 0
+  }
+}

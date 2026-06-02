@@ -1,0 +1,50 @@
+# Secrets — NEVER commit these
+*.env
+.env.*
+config.local.yaml
+*credentials*
+*secret*
+*.key
+*.pem
+*.p12
+
+# Runtime state — not for version control
+logs/
+logs/*.log
+memories/
+memories/**/*.md
+
+# Handoff staging — transient
+handoffs/to-main/
+handoffs/**/*.md
+
+# Build artifacts
+__pycache__/
+*.pyc
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node (if any JS tooling)
+node_modules/
+npm-debug.log
+
+# Docker
+.dockerignore
+
+# Temporary files
+tmp/
+temp/
+*.tmp

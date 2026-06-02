@@ -1,0 +1,16 @@
+{
+  "completed_assignments": [],
+  "study_log": [],
+  "test_scores": [],
+  "subject_coverage": {
+    "aqeedah": {"topics_studied": 0, "last_studied": null},
+    "fiqh": {"topics_studied": 0, "last_studied": null},
+    "usul-al-fiqh": {"topics_studied": 0, "last_studied": null},
+    "hadith-sciences": {"topics_studied": 0, "last_studied": null},
+    "seerah": {"topics_studied": 0, "last_studied": null},
+    "tafsir": {"topics_studied": 0, "last_studied": null},
+    "arabic": {"topics_studied": 0, "last_studied": null},
+    "ulum-al-quran": {"topics_studied": 0, "last_studied": null},
+    "general": {"topics_studied": 0, "last_studied": null}
+  }
+}

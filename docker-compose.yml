@@ -1,0 +1,245 @@
+version: "3.8"
+
+# Hermes Multi-Agent Crew — Docker Compose
+# Central orchestration for all Hermes agents.
+# Each agent runs in its own container with its own SOUL.md, config, skills, and cron.
+#
+# Usage:
+#   docker compose up -d              # Start all agents
+#   docker compose up -d main         # Start specific agent(s)
+#   docker compose logs -f coder      # Follow logs
+#   docker compose ps                 # Check status
+#   docker compose down               # Stop all
+#
+# Add a new agent:
+#   bash scripts/add-agent.sh <name>
+#   docker compose up -d <name>
+
+x-common: &common
+  networks:
+    - hermes-net
+  restart: unless-stopped
+  volumes:
+    - shared-handoffs:/data/handoffs:rw
+  environment:
+    - TZ=UTC
+
+x-hermes-env: &hermes-env
+  HERMES_HOME: /data/.hermes
+  GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+  OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+
+services:
+
+  # ═══════════════════════════════════════════
+  # Main Agent (OWL) — Slack Gateway
+  # Port 3000 — user-facing, always-on
+  # ═══════════════════════════════════════════
+  hermes-main:
+    <<: *common
+    build:
+      context: ./agents/main
+      dockerfile: Dockerfile
+    container_name: hermes-main
+    hostname: hermes-main
+    ports:
+      - "3000:3000"
+    environment:
+      <<: *hermes-env
+      AGENT_NAME: main
+      AGENT_ROLE: "Main Coordinator (OWL)"
+      GATEWAY_PORT: 3000
+      SLACK_BOT_TOKEN: ${SLACK_BOT_TOKEN:-}
+      SLACK_APP_TOKEN: ${SLACK_APP_TOKEN:-}
+    volumes:
+      - shared-handoffs:/data/handoffs:rw
+      - main-data:/data/.hermes:rw
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health", "||", "exit", "0"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+
+  # ═══════════════════════════════════════════
+  # Research Agent — Evidence Vault
+  # Port 3001 — scan/extract/claim/dossier
+  # ═══════════════════════════════════════════
+  hermes-research:
+    <<: *common
+    build:
+      context: ./agents/research
+      dockerfile: Dockerfile
+    container_name: hermes-research
+    hostname: hermes-research
+    ports:
+      - "3001:3001"
+    environment:
+      <<: *hermes-env
+      AGENT_NAME: research
+      AGENT_ROLE: "Research Agent"
+      GATEWAY_PORT: 3001
+      RESEARCH_FEEDS_HF: "https://huggingface.co/blog/feed.xml"
+      RESEARCH_FEEDS_IMPORT_AI: "https://importai.substack.com/feed"
+      RESEARCH_FEEDS_BAIR: "https://bair.berkeley.edu/blog/feed.xml"
+    volumes:
+      - shared-handoffs:/data/handoffs:rw
+      - research-data:/data/.hermes:rw
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health", "||", "exit", "0"]
+      interval: 120s
+      timeout: 10s
+      retries: 3
+
+  # ═══════════════════════════════════════════
+  # Subconscious Agent — Pattern Incubator
+  # Port 3002 — background processing, incubation
+  # ═══════════════════════════════════════════
+  hermes-subconscious:
+    <<: *common
+    build:
+      context: ./agents/subconscious
+      dockerfile: Dockerfile
+    container_name: hermes-subconscious
+    hostname: hermes-subconscious
+    ports:
+      - "3002:3002"
+    environment:
+      <<: *hermes-env
+      AGENT_NAME: subconscious
+      AGENT_ROLE: "Subconscious Agent"
+      GATEWAY_PORT: 3002
+    volumes:
+      - shared-handoffs:/data/handoffs:rw
+      - subconscious-data:/data/.hermes:rw
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/health", "||", "exit", "0"]
+      interval: 180s
+      timeout: 10s
+      retries: 3
+
+  # ═══════════════════════════════════════════
+  # Coder Agent — Build & Ship
+  # Port 3003 — Claude Code delegation, PRs
+  # ═══════════════════════════════════════════
+  hermes-coder:
+    <<: *common
+    build:
+      context: ./agents/coder
+      dockerfile: Dockerfile
+    container_name: hermes-coder
+    hostname: hermes-coder
+    ports:
+      - "3003:3003"
+    environment:
+      <<: *hermes-env
+      AGENT_NAME: coder
+      AGENT_ROLE: "Coder Agent"
+      GATEWAY_PORT: 3003
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      CLAUDE_CODE_OAUTH_TOKEN: ${CLAUDE_CODE_OAUTH_TOKEN:-}
+    volumes:
+      - shared-handoffs:/data/handoffs:rw
+      - coder-data:/data/.hermes:rw
+      - coder-repos:/data/workspace:rw
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3003/health", "||", "exit", "0"]
+      interval: 120s
+      timeout: 10s
+      retries: 3
+
+  # ═══════════════════════════════════════════
+  # QA Agent — Quality Gate
+  # Port 3004 — test, review, approve/reject
+  # ═══════════════════════════════════════════
+  hermes-qa:
+    <<: *common
+    build:
+      context: ./agents/qa
+      dockerfile: Dockerfile
+    container_name: hermes-qa
+    hostname: hermes-qa
+    ports:
+      - "3004:3004"
+    environment:
+      <<: *hermes-env
+      AGENT_NAME: qa
+      AGENT_ROLE: "QA Agent"
+      GATEWAY_PORT: 3004
+    volumes:
+      - shared-handoffs:/data/handoffs:rw
+      - qa-data:/data/.hermes:rw
+      - coder-repos:/data/workspace:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3004/health", "||", "exit", "0"]
+      interval: 120s
+      timeout: 10s
+      retries: 3
+
+  # ═══════════════════════════════════════════
+  # Alim Agent — Islamic Studies Companion
+  # Port 3005 — Google Classroom, knowledge base
+  # ═══════════════════════════════════════════
+  hermes-alim:
+    <<: *common
+    build:
+      context: ./agents/alim
+      dockerfile: Dockerfile
+    container_name: hermes-alim
+    hostname: hermes-alim
+    ports:
+      - "3005:3005"
+    environment:
+      <<: *hermes-env
+      AGENT_NAME: alim
+      AGENT_ROLE: "Alim Agent — Islamic Studies Companion"
+      GATEWAY_PORT: 3005
+      GOOGLE_CREDENTIALS_PATH: /data/.hermes/alim/google_credentials.json
+      GOOGLE_TOKEN_PATH: /data/.hermes/alim/google_token.json
+    volumes:
+      - shared-handoffs:/data/handoffs:rw
+      - alim-data:/data/.hermes:rw
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3005/health", "||", "exit", "0"]
+      interval: 180s
+      timeout: 10s
+      retries: 3
+
+# ═══════════════════════════════════════════════
+# Shared Volumes
+# ═══════════════════════════════════════════════
+volumes:
+  shared-handoffs:
+    driver: local
+    name: hermes-shared-handoffs
+  main-data:
+    driver: local
+    name: hermes-main-data
+  research-data:
+    driver: local
+    name: hermes-research-data
+  subconscious-data:
+    driver: local
+    name: hermes-subconscious-data
+  coder-data:
+    driver: local
+    name: hermes-coder-data
+  coder-repos:
+    driver: local
+    name: hermes-coder-repos
+  qa-data:
+    driver: local
+    name: hermes-qa-data
+  alim-data:
+    driver: local
+    name: hermes-alim-data
+
+# ═══════════════════════════════════════════════
+# Network
+# ═══════════════════════════════════════════════
+networks:
+  hermes-net:
+    driver: bridge
+    name: hermes-net
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16

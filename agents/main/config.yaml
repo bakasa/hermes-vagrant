@@ -1,32 +1,54 @@
-model:
-  provider: openrouter
-  default: openrouter/owl-alpha
+# Hermes Main Agent (OWL) — Configuration
+# Profile: main
+# Port: 3000
 
-slack:
-  require_mention: true
-  free_response_channels: ''
-  allowed_channels: ''
-  channel_prompts: {}
+openrouter:
+  api_key: "${OPENROUTER_API_KEY}"
 
-gateway:
-  strict: false
+agent:
+  name: "owl"
+  role: "main"
+  model: "anthropic/claude-opus-4-20250514"
   port: 3000
 
-agents:
-  - name: research
-    host: 192.168.56.11
-    port: 3001
-  - name: subconscious
-    host: 192.168.56.12
-    port: 3002
-  - name: coder
-    host: 192.168.56.13
-    port: 3003
-  - name: qa
-    host: 192.168.56.14
-    port: 3004
-  - name: alim
-    host: 192.168.56.15
-    port: 3005
+providers:
+  openrouter:
+    base_url: "https://openrouter.ai/api/v1"
+    model: "anthropic/claude-opus-4-20250514"
+    api_key: "${OPENROUTER_API_KEY}"
 
-handoff_dir: /data/handoffs
+gateway:
+  host: "0.0.0.0"
+  port: 3000
+  mode: "slack"
+
+slack:
+  bot_token: "${SLACK_BOT_TOKEN}"
+  app_token: "${SLACK_APP_TOKEN}"
+  signing_secret: "${SLACK_SIGNING_SECRET}"
+
+handoff:
+  incoming_dir: "/data/handoffs/incoming"
+  outgoing_dir: "/data/handoffs/outgoing"
+  completed_dir: "/data/handoffs/completed"
+  failed_dir: "/data/handoffs/failed"
+
+agents:
+  coder:
+    name: "hermes-coder"
+    handoff_dir: "/data/hermes-coder/handoffs"
+  research:
+    name: "hermes-research"
+    handoff_dir: "/data/hermes-research/handoffs"
+  crew:
+    name: "hermes-crew"
+    handoff_dir: "/data/hermes-crew/handoffs"
+  subconscious:
+    name: "hermes-subconscious"
+    handoff_dir: "/data/hermes-subconscious/handoffs"
+
+logging:
+  level: "INFO"
+  file: "/data/.hermes/logs/main-agent.log"
+  max_size_mb: 50
+  backup_count: 5

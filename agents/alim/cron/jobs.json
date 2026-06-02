@@ -1,0 +1,55 @@
+{
+  "jobs": [
+    {
+      "id": "daily-classroom-sync",
+      "name": "Daily Google Classroom Sync",
+      "description": "Synchronizes course data, announcements, and assignments from Google Classroom.",
+      "schedule": {
+        "type": "cron",
+        "expr": "0 7 * * *"
+      },
+      "action": {
+        "type": "script",
+        "command": "python skills/alim-agent/scripts/classroom_sync.py --sync all",
+        "working_dir": "/app"
+      },
+      "enabled": true,
+      "notify_on_complete": true,
+      "timeout_seconds": 300
+    },
+    {
+      "id": "daily-due-date-reminder",
+      "name": "Daily Due Date Reminder",
+      "description": "Checks for upcoming assignment deadlines and sends gentle reminders to the student.",
+      "schedule": {
+        "type": "cron",
+        "expr": "0 8 * * *"
+      },
+      "action": {
+        "type": "script",
+        "command": "python skills/alim-agent/scripts/classroom_sync.py --check-due",
+        "working_dir": "/app"
+      },
+      "enabled": true,
+      "notify_on_complete": false,
+      "timeout_seconds": 120
+    },
+    {
+      "id": "weekly-knowledge-summary",
+      "name": "Weekly Knowledge Base Summary",
+      "description": "Generates a weekly summary of new study materials added to the knowledge base.",
+      "schedule": {
+        "type": "cron",
+        "expr": "0 10 * * 0"
+      },
+      "action": {
+        "type": "script",
+        "command": "python -c \"from hermes_alim.knowledge import summarize; summarize.weekly()\"",
+        "working_dir": "/app"
+      },
+      "enabled": false,
+      "notify_on_complete": true,
+      "timeout_seconds": 60
+    }
+  ]
+}

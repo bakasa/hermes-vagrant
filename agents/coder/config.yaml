@@ -1,20 +1,59 @@
-model:
-  provider: openrouter
-  default: openrouter/owl-alpha
+# Hermes Agent — Coder Agent Configuration
+# OpenRouter provider, port 3003, tool-enabled.
+
+agent:
+  name: coder-agent
+  role: builder
+  description: >
+    Delegates to Claude Code CLI, manages PRs, runs tests, and ships code.
+    Receives task briefs from Main and build signals from Research.
+
+provider:
+  name: openrouter
+  model: sonnet
+  base_url: https://openrouter.ai/api/v1
 
 gateway:
-  strict: false
   port: 3003
+  host: 0.0.0.0
+  cors_origins:
+    - "*"
 
-coder:
-  workspace: /data/workspace
-  sandbox_mode: true
-  max_parallel_tasks: 4
-  git:
-    auto_commit: true
-    auto_push: false  # require human approval before push
-  claude_code:
-    enabled: true
-    oauth_token_env: CLAUDE_CODE_OAUTH_TOKEN
+tools:
+  enabled: true
+  allow:
+    - read_file
+    - write_file
+    - patch
+    - search_files
+    - exec
+    - web_search
+    - web_fetch
 
-handoff_dir: /data/handoffs
+claude_cli:
+  command: claude
+  headless_flag: "-p"
+  max_turns: 100
+  default_timeout_ms: 600000  # 10 minutes
+
+workspace:
+  root: /data/hermes-coder/workspace
+
+pr_workflow:
+  default_branch: main
+  require_reviews: true
+  squash_merge: true
+  require_ci: true
+  remote: origin
+
+test:
+  auto_run: true
+  fail_no_tests: true  # fail the task if the repo has no test suite
+
+cron:
+  jobs_file: cron/jobs.json
+  enabled: true
+
+logging:
+  level: info
+  format: json

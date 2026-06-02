@@ -1,0 +1,42 @@
+# Environment & secrets
+.env
+*.env
+config.local.yaml
+config.override.yaml
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+dist/
+build/
+
+# Node
+node_modules/
+*.log
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+.docker/
+
+# Runtime
+*.db
+*.sqlite
+.state/
+.cache/
+
+# Sensitive
+*halting*
+secrets/
+tokens/

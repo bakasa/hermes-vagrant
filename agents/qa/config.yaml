@@ -1,22 +1,29 @@
-model:
-  provider: openrouter
-  default: openrouter/owl-alpha
+# Hermes QA Agent Configuration
+
+app:
+  name: hermes-qa
+  description: "QA Agent — quality gatekeeper for PR reviews, test runs, and security scans"
+  version: "1.0.0"
+
+server:
+  port: 3004
+  host: "0.0.0.0"
+
+provider:
+  type: openrouter
+  base_url: "https://openrouter.ai/api/v1"
+  model: "anthropic/claude-3-opus"   # Thorough reviews demand a strong model
 
 gateway:
-  strict: false
   port: 3004
+  health_check_path: "/health"
 
-qa:
-  workspace: /data/workspace
-  workspace_mount: ro  # read-only
-  test_patterns:
-    - "pytest"
-    - "npm test"
-    - "go test"
-    - "cargo test"
-  verdict_options:
-    - PASS
-    - CONDITIONAL_PASS
-    - FAIL
+review:
+  auto_run_tests: true
+  security_scan: true
+  max_pr_size_lines: 500       # Flag PRs that are too large for effective review
+  max_review_time_seconds: 300  # Target: review within 5 minutes
 
-handoff_dir: /data/handoffs
+logging:
+  level: "info"
+  format: "text"

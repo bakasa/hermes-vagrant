@@ -1,0 +1,20 @@
+agent:
+  name: AGENT_NAME
+  role: "Hermes Agent"
+  soul: "./SOUL.md"
+
+model:
+  provider: "openrouter"
+  default: "openrouter/auto"
+
+gateway:
+  port: AGENT_PORT
+  bind: "0.0.0.0"
+
+paths:
+  skills: "./skills/"
+  cron: "./cron/"
+  memories: "/data/.hermes/memories/"
+
+logging:
+  level: "info"

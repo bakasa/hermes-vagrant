@@ -1,0 +1,56 @@
+{
+  "jobs": [
+    {
+      "name": "check-new-prs",
+      "description": "Poll for new pull requests and trigger QA review",
+      "schedule": "*/15 * * * *",
+      "enabled": true,
+      "action": {
+        "type": "webhook",
+        "method": "GET",
+        "url": "/api/v1/prs/pending",
+        "headers": {
+          "User-Agent": "hermes-qa/1.0.0"
+        }
+      },
+      "on_response": {
+        "200": {
+          "action": "iterate",
+          "each": "pr",
+          "steps": [
+            {
+              "action": "review",
+              "pr_id": "{{ pr.id }}",
+              "pr_url": "{{ pr.url }}",
+              "pr_diff_url": "{{ pr.diff_url }}"
+            },
+            {
+              "action": "post_comment",
+              "pr_id": "{{ pr.id }}",
+              "comment": "{{ review.verdict }}"
+            }
+          ]
+        },
+        "default": {
+          "action": "log",
+          "level": "warn",
+          "message": "Unexpected response polling for PRs: {{ status }}"
+        }
+      },
+      "retry": {
+        "max_attempts": 3,
+        "backoff_seconds": 30
+      }
+    },
+    {
+      "name": "health-check",
+      "description": "Periodic self-health check",
+      "schedule": "*/5 * * * *",
+      "enabled": true,
+      "action": {
+        "type": "exec",
+        "command": "curl -sf http://localhost:3004/health"
+      }
+    }
+  ]
+}

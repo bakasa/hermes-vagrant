@@ -1,18 +1,87 @@
-model:
-  provider: openrouter
-  default: openrouter/owl-alpha
+# Hermes Research Agent — Configuration
+# Port: 3001
+# Model: sonnet (OpenRouter)
 
-gateway:
-  strict: false
+agent:
+  name: research
+  role: "Research Agent — Evidence Collector & Signal Router"
+  version: "1.0.0"
   port: 3001
 
-research:
-  feeds:
-    huggingface: "https://huggingface.co/blog/feed.xml"
-    import_ai: "https://importai.substack.com/feed"
-    bair: "https://bair.berkeley.edu/blog/feed.xml"
-  max_results_per_scan: 20
-  dossier_path: "vault/dossiers"
-  scan_interval_hours: 6
+provider:
+  name: openrouter
+  api_base: "https://openrouter.ai/api/v1"
+  api_key_env: "OPENROUTER_API_KEY"
+  model: "openrouter/anthropic/claude-sonnet-4-20250514"
+  fallback_model: "openrouter/anthropic/claude-haiku-4-20250514"
 
-handoff_dir: /data/handoffs
+gateway:
+  port: 3001
+  host: "0.0.0.0"
+  health_check_interval: 120
+  log_level: "info"
+
+tools:
+  enabled:
+    - web_search
+    - web_fetch
+    - file_read
+    - file_write
+    - file_search
+    - shell_exec
+    - cron
+  disabled:
+    - slack_post    # Research agent doesn't post to Slack directly
+    - github_pr     # No PR creation from research agent
+
+research:
+  vault_path: "/data/.hermes/research/vault"
+  handoff_path: "/data/handoffs"
+  scan_interval_hours: 6
+  daily_digest_hour: 06:00  # UTC
+  max_sources_per_finding: 10
+  default_confidence: "UNVERIFIED"
+  language: "en"
+
+  arxiv:
+    categories:
+      - "cs.AI"
+      - "cs.CL"
+      - "cs.LG"
+      - "cs.CV"
+      - "cs.NE"
+      - "stat.ML"
+    max_results_per_scan: 20
+    sort_by: "submittedDate"
+    sort_order: "descending"
+
+  rss:
+    feeds_file: "skills/research-agent/references/feed-list.md"
+    max_entries_per_feed: 15
+    timeout_seconds: 30
+
+  semantic_scholar:
+    enabled: true
+    max_results: 10
+    fields: "title,authors,year,abstract,citationCount,url"
+
+handoff:
+  enabled: true
+  path: "/data/handoffs"
+  targets:
+    - main
+    - coder
+    - qa
+    - subconscious
+  format: "json"
+  schema_version: "1.0"
+
+cron:
+  jobs_file: "cron/jobs.json"
+  enabled: true
+
+skills:
+  - research-agent
+
+environment:
+  TZ: "UTC"

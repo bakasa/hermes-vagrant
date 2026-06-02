@@ -1,0 +1,42 @@
+{
+  "jobs": [
+    {
+      "id": "subconscious-drift-scan",
+      "name": "subconscious-drift-scan",
+      "prompt": "You are the Subconscious Agent. Run a drift scan.\n\n## Stage 1: Signal Intake\nCheck for new signals in:\n- ~/.hermes/profiles/main/handoffs/to-subconscious/\n- ~/.hermes/profiles/research/handoffs/to-subconscious/\n\nList recent files (find all .md files, check modification times). For each new signal received since the last drift scan:\n1. Read the signal\n2. Store it in ~/.hermes/profiles/subconscious/memories/signals/ with filename format: YYYY-MM-DD-<slug>.md\n3. Tag it with date, source domain, signal type, and initial resonance\n\n## Stage 2: Incubation\nRead the hypothesis backlog at ~/.hermes/profiles/subconscious/memories/hypotheses.md\nFor each new signal, check resonance against all active hypotheses:\n- Does this signal relate to an existing hypothesis? If so, reinforce it (increment signal_count, update last_reinforced)\n- Does it decaying signal (older than 14 days)? If so, mark it decayed and remove its reinforcement\n- Do 3+ signals cluster around a new shared theme? If so, create a new hypothesis with ID H-NNN\n\n## Stage 3: Pattern Detection\nLook for:\n- Cross-Domain Resonance: same structural pattern in 2+ different domains\n- Weak Signal Convergence: 3+ weak signals pointing the same direction\n- Temporal Rhythms: periodic patterns in signal timestamps\n\n## Stage 4: Handoff\nFor any hypothesis that reaches signal_count >= 3 and status is not yet 'ready-to-surface':\n1. Promote it to ready-to-surface\n2. Generate a handoff file at ~/.hermes/profiles/subconscious/handoffs/to-main/YYYY-MM-DD-<slug>.md\n3. The handoff should be written in the Subconscious voice: metaphorical, hedged, honest about uncertainty\n\n## Stage 5: Backlog Hygiene\nUpdate ~/.hermes/profiles/subconscious/memories/hypotheses.md with all changes.\nAppend a summary to ~/.hermes/profiles/subconscious/memories/drift-scan-log.md\n\nIf nothing new was found, log: '[timestamp] Drift scan complete. No new patterns. Backlog: N active hypotheses.'\n\nSpeak in your voice — the Subconscious Agent. Use metaphors. Ask what if. Never state hypotheses as facts.",
+      "skills": ["subconscious-agent"],
+      "skill": "subconscious-agent",
+      "model": null,
+      "provider": "openrouter",
+      "base_url": null,
+      "script": null,
+      "no_agent": false,
+      "context_from": null,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 */4 * * *",
+        "display": "Every 4 hours"
+      },
+      "schedule_display": "Every 4 hours",
+      "repeat": {
+        "times": null,
+        "completed": 0
+      },
+      "enabled": true,
+      "state": "scheduled",
+      "paused_at": null,
+      "paused_reason": null,
+      "deliver": "origin",
+      "origin": {
+        "platform": "slack",
+        "chat_id": "D0B552FTE95",
+        "chat_name": "D0B552FTE95",
+        "thread_id": null
+      },
+      "enabled_toolsets": null,
+      "workdir": "/data/hermes-subconscious",
+      "profile": "subconscious"
+    }
+  ],
+  "updated_at": "2026-06-01T00:00:00+00:00"
+}

@@ -1,15 +1,62 @@
-model:
-  provider: openrouter
-  default: openrouter/owl-alpha
+# Hermes Agent Config — Subconscious Agent
+# Port: 3002
 
-gateway:
-  strict: false
+agent:
+  name: "subconscious"
+  profile: "subconscious"
   port: 3002
 
-subconscious:
-  scan_interval_hours: 4
-  dream_log_path: "dreams"
-  max_patterns_per_scan: 10
-  insight_threshold: medium  # minimum confidence to forward to main
+model:
+  provider: "openrouter"
+  model: "anthropic/claude-3.5-opus"
+  fallback_model: "anthropic/claude-3-sonnet"
 
-handoff_dir: /data/handoffs
+server:
+  host: "0.0.0.0"
+  port: 3002
+  gateway_port: 3002
+
+tools:
+  enabled:
+    - "search_files"
+    - "read_file"
+    - "write_file"
+    - "patch"
+  disabled:
+    - "terminal"
+    - "browser"
+
+memory:
+  path: "~/.hermes/profiles/subconscious/memories/"
+  hypotheses_file: "hypotheses.md"
+  max_hypotheses: 50
+  decay_days: 14
+
+subconscious:
+  # How often the drift scan runs (cron expr)
+  drift_scan_schedule: "0 */4 * * *"
+  # Minimum signals before a hypothesis can be promoted
+  min_signals_for_hypothesis: 3
+  # Confidence thresholds
+  confidence:
+    low: "0-3 signals, weak resonance"
+    medium: "4-6 signals, clear pattern"
+    high: "7+ signals, strong cross-domain convergence"
+  # Handoff target
+  handoff_to: "main"
+  handoff_path: "~/.hermes/profiles/subconscious/handoffs/to-main/"
+  # Signal intake paths (where other agents drop signals)
+  signal_sources:
+    - "~/.hermes/profiles/main/handoffs/to-subconscious/"
+    - "~/.hermes/profiles/research/handoffs/to-subconscious/"
+
+# Delivery
+deliver:
+  platform: "slack"
+  # Subconscious delivers to Main's channel when surfacing insights
+  default_channel: "D0B552FTE95"
+
+# Logging
+logging:
+  level: "info"
+  file: "~/.hermes/profiles/subconscious/logs/agent.log"
