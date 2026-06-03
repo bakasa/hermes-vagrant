@@ -1,132 +1,163 @@
-# Manage Hermes Crew Agents
+# Manage Hermes Crew — Runtime Agent Orchestration
 
-Enable or disable agents in the hermes-crew deployment by modifying their autostart config and restarting.
-Auto-detects whether running on Railway (GitHub API + redeploy) or local Docker Compose (docker socket).
+Spawn, enable, disable, and inspect agents at runtime via supervisorctl.
+No Docker rebuild or redeploy needed — changes take effect in seconds.
+New agents persist across restarts via /data/supervisor.d/ (volume-backed).
 
-## When to use
-- User asks to "enable <agent>", "activate <agent>", "start <agent> agent"
-- User asks to "disable <agent>", "deactivate <agent>", "turn off <agent>"
-- User asks "which agents are running?" or "agent status"
-- Valid agents: research, subconscious, coder, qa, alim
+## Commands OWL supports
 
-## Execute with execute_code tool
+| User says | Action |
+|---|---|
+| "enable coder" | supervisorctl start hermes-coder |
+| "disable research" | supervisorctl stop hermes-research |
+| "agent status" / "crew status" | supervisorctl status |
+| "create agent <name>: <description>" | scaffold + supervisorctl update |
+| "remove agent <name>" | supervisorctl stop + remove .conf |
 
-```python
-import os, base64, json, urllib.request, subprocess
+---
 
-AGENT = "coder"   # set to target agent name
-ACTION = "enable"  # "enable" or "disable"
-
-IS_RAILWAY = bool(os.environ.get("RAILWAY_PROJECT_ID"))
-IS_LOCAL = os.path.exists("/var/run/docker.sock")
-
-# ── LOCAL: Docker socket path ─────────────────────────────────────────────
-if IS_LOCAL:
-    container = f"hermes-{AGENT}"
-    if ACTION == "enable":
-        r = subprocess.run(
-            ["docker", "compose", "up", "-d", container],
-            cwd="/app", capture_output=True, text=True
-        )
-        print(r.stdout or r.stderr)
-        print(f"hermes-{AGENT} started")
-    else:
-        r = subprocess.run(
-            ["docker", "compose", "stop", container],
-            cwd="/app", capture_output=True, text=True
-        )
-        print(r.stdout or r.stderr)
-        print(f"hermes-{AGENT} stopped")
-
-# ── RAILWAY: GitHub API + redeploy ────────────────────────────────────────
-elif IS_RAILWAY:
-    GITHUB_TOKEN = os.environ["GITHUB_TOKEN"]
-    RAILWAY_TOKEN = os.environ.get("RAILWAY_API_TOKEN", "")
-
-    # Fetch supervisord.railway.conf
-    req = urllib.request.Request(
-        "https://api.github.com/repos/bakasa/hermes-vagrant/contents/supervisord.railway.conf",
-        headers={"Authorization": f"token {GITHUB_TOKEN}", "Accept": "application/vnd.github.v3+json"}
-    )
-    with urllib.request.urlopen(req) as r:
-        data = json.loads(r.read())
-    sha = data["sha"]
-    content = base64.b64decode(data["content"]).decode()
-
-    # Toggle autostart in the right program block
-    block_marker = f"[program:hermes-{AGENT}]"
-    lines, in_block = [], False
-    changed = False
-    for line in content.splitlines():
-        if line.strip() == block_marker:
-            in_block = True
-        if in_block:
-            if ACTION == "enable" and line.strip() == "autostart=false":
-                line = line.replace("autostart=false", "autostart=true")
-                in_block = False
-                changed = True
-            elif ACTION == "disable" and line.strip() == "autostart=true":
-                line = line.replace("autostart=true", "autostart=false")
-                in_block = False
-                changed = True
-        lines.append(line)
-    new_content = "\n".join(lines) + "\n"
-
-    if not changed:
-        print(f"hermes-{AGENT} already {ACTION}d — no change needed")
-    else:
-        # Push to GitHub
-        payload = json.dumps({
-            "message": f"chore: {ACTION} hermes-{AGENT} agent",
-            "content": base64.b64encode(new_content.encode()).decode(),
-            "sha": sha
-        }).encode()
-        req2 = urllib.request.Request(
-            "https://api.github.com/repos/bakasa/hermes-vagrant/contents/supervisord.railway.conf",
-            data=payload, method="PUT",
-            headers={"Authorization": f"token {GITHUB_TOKEN}", "Content-Type": "application/json"}
-        )
-        with urllib.request.urlopen(req2) as r:
-            result = json.loads(r.read())
-        print(f"GitHub updated: {result['commit']['sha'][:8]}")
-
-        # Trigger Railway redeploy
-        if RAILWAY_TOKEN:
-            gql = json.dumps({"query": """mutation { environmentTriggersDeploy(input: {
-                projectId: "f4a0f3ee-f69d-4573-a6e5-146362198454"
-                environmentId: "5098f54b-41cf-4668-b6f7-7778ac37a47e"
-                serviceId: "5acf2f58-6ae4-4dbf-a953-1fe60c3a8f72"
-            }) }"""}).encode()
-            req3 = urllib.request.Request(
-                "https://backboard.railway.app/graphql/v2", data=gql,
-                headers={"Authorization": f"Bearer {RAILWAY_TOKEN}",
-                         "Content-Type": "application/json", "User-Agent": "railway-cli/3.0.0"}
-            )
-            with urllib.request.urlopen(req3) as r:
-                print("Railway redeploy triggered:", json.loads(r.read()).get("data", {}).get("environmentTriggersDeploy"))
-            print(f"hermes-{AGENT} will be {ACTION}d in ~3 min")
-        else:
-            print("RAILWAY_API_TOKEN not set — push done but redeploy must be triggered manually")
-else:
-    print("ERROR: Not on Railway and no Docker socket found at /var/run/docker.sock")
-```
-
-## Agent status check
+## Enable / Disable existing agent (instant)
 
 ```python
-import os, subprocess, urllib.request, json
+import subprocess
 
-IS_LOCAL = os.path.exists("/var/run/docker.sock")
-if IS_LOCAL:
-    r = subprocess.run(["docker", "compose", "ps", "--format", "json"],
-        cwd="/app", capture_output=True, text=True)
-    print(r.stdout)
-else:
-    print("Railway: check Railway dashboard or deployment logs for agent status")
+AGENT = "coder"   # research | subconscious | coder | qa | alim
+ACTION = "start"  # start | stop | restart
+
+r = subprocess.run(
+    ["sudo", "supervisorctl", ACTION, f"hermes-{AGENT}"],
+    capture_output=True, text=True
+)
+print(r.stdout or r.stderr)
 ```
+
+---
+
+## Agent status
+
+```python
+import subprocess
+r = subprocess.run(["sudo", "supervisorctl", "status"], capture_output=True, text=True)
+print(r.stdout)
+```
+
+---
+
+## Create a brand new agent (spawns immediately, persists across restarts)
+
+```python
+import os, subprocess
+
+AGENT_NAME = "trader"          # lowercase, hyphens ok
+AGENT_ROLE = "Crypto Trader"   # human-readable role
+AGENT_SOUL = """You are the Trader agent in the Hermes crew.
+Your role: monitor markets, execute trades, report to OWL.
+Specialties: crypto trading, market analysis, risk management."""
+
+# 1. Scaffold agent directory on volume
+agent_dir = f"/data/agents/{AGENT_NAME}"
+hermes_home = f"/data/.hermes/{AGENT_NAME}"
+os.makedirs(agent_dir, exist_ok=True)
+os.makedirs(hermes_home, exist_ok=True)
+
+# 2. Write SOUL.md
+with open(f"{agent_dir}/SOUL.md", "w") as f:
+    f.write(f"# {AGENT_ROLE}\n\n{AGENT_SOUL}\n")
+
+# 3. Write config.yaml (copy main agent pattern)
+config = f"""agent:
+  name: "{AGENT_NAME}"
+  role: "{AGENT_ROLE}"
+
+openrouter:
+  api_key: "${{OPENROUTER_API_KEY}}"
+
+providers:
+  openrouter:
+    base_url: "https://openrouter.ai/api/v1"
+    api_key: "${{OPENROUTER_API_KEY}}"
+
+gateway:
+  host: "0.0.0.0"
+  mode: "slack"
+
+slack:
+  bot_token: "${{SLACK_BOT_TOKEN}}"
+  app_token: "${{SLACK_APP_TOKEN}}"
+
+handoff:
+  incoming_dir: "/data/handoffs/incoming"
+  outgoing_dir: "/data/handoffs/outgoing"
+  completed_dir: "/data/handoffs/completed"
+  failed_dir: "/data/handoffs/failed"
+"""
+with open(f"{agent_dir}/config.yaml", "w") as f:
+    f.write(config)
+
+# 4. Set model via hermes config set
+env = dict(os.environ)
+env["HERMES_HOME"] = hermes_home
+env["HOME"] = "/data"
+subprocess.run(["/usr/local/bin/hermes", "config", "set", "model", "openrouter/owl-alpha"],
+    env=env, capture_output=True)
+
+# 5. Fix ownership (hermes uid=10000)
+subprocess.run(["chown", "-R", "10000:10000", agent_dir, hermes_home])
+
+# 6. Write supervisord .conf to /data/supervisor.d/ (persists via volume)
+conf = f"""[program:hermes-{AGENT_NAME}]
+command=hermes gateway run
+directory={agent_dir}
+user=hermes
+autostart=true
+autorestart=true
+startretries=5
+startsecs=10
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/stderr
+stderr_logfile_maxbytes=0
+environment=HOME="/data",HERMES_HOME="{hermes_home}",AGENT_NAME="{AGENT_NAME}",OPENROUTER_API_KEY="%(ENV_OPENROUTER_API_KEY)s",SLACK_BOT_TOKEN="%(ENV_SLACK_BOT_TOKEN)s",SLACK_APP_TOKEN="%(ENV_SLACK_APP_TOKEN)s",SLACK_ALLOWED_USERS="%(ENV_SLACK_ALLOWED_USERS)s"
+"""
+conf_path = f"/data/supervisor.d/hermes-{AGENT_NAME}.conf"
+with open(conf_path, "w") as f:
+    f.write(conf)
+
+# 7. Tell supervisord to pick up the new process (no restart of existing agents)
+r = subprocess.run(["sudo", "supervisorctl", "reread"], capture_output=True, text=True)
+print("reread:", r.stdout.strip())
+r2 = subprocess.run(["sudo", "supervisorctl", "update"], capture_output=True, text=True)
+print("update:", r2.stdout.strip())
+
+# 8. Verify it started
+r3 = subprocess.run(["sudo", "supervisorctl", "status", f"hermes-{AGENT_NAME}"],
+    capture_output=True, text=True)
+print("status:", r3.stdout.strip())
+print(f"\nAgent hermes-{AGENT_NAME} spawned. It will survive restarts.")
+```
+
+---
+
+## Remove an agent
+
+```python
+import os, subprocess
+
+AGENT_NAME = "trader"
+subprocess.run(["sudo", "supervisorctl", "stop", f"hermes-{AGENT_NAME}"], capture_output=True)
+conf_path = f"/data/supervisor.d/hermes-{AGENT_NAME}.conf"
+if os.path.exists(conf_path):
+    os.remove(conf_path)
+subprocess.run(["sudo", "supervisorctl", "reread"], capture_output=True)
+subprocess.run(["sudo", "supervisorctl", "update"], capture_output=True)
+print(f"hermes-{AGENT_NAME} removed")
+```
+
+---
 
 ## Notes
-- **Local**: uses `/var/run/docker.sock` — mount it in docker-compose.yml for hermes-main (already done)
-- **Railway**: uses GitHub API + RAILWAY_API_TOKEN env var — already configured
-- Redeploy takes ~3 min on Railway; local Docker starts in seconds
-- `cwd="/app"` assumes docker-compose.yml is at /app in container
+- supervisorctl socket at `/tmp/supervisor.sock` requires sudo (hermes user has NOPASSWD sudo)
+- `/data/supervisor.d/` is on the persistent volume — new agents survive Docker restarts
+- `/data/agents/<name>/` holds SOUL.md + config.yaml on volume
+- Pre-built agents (research, coder, etc.) are in `/app/agents/` in the image
+- Creating a new agent takes ~5 seconds; no rebuild, no redeploy
