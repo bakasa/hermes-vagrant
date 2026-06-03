@@ -59,6 +59,7 @@ services:
     volumes:
       - shared-handoffs:/data/handoffs:rw
       - main-data:/data/.hermes:rw
+      - /var/run/docker.sock:/var/run/docker.sock:ro  # orchestrate other agents
     healthcheck:
       <<: *health
 
