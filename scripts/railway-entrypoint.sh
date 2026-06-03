@@ -14,6 +14,16 @@ mkdir -p \
     /data/handoffs/completed \
     /data/handoffs/failed
 
+# Copy agent configs to HERMES_HOME dirs so hermes finds them on first boot.
+# Volume mount creates empty dirs — without this, hermes uses default config (no model).
+for agent in main research subconscious coder qa alim; do
+    src="/app/agents/${agent}/config.yaml"
+    dst="/data/.hermes/${agent}/config.yaml"
+    if [ -f "$src" ]; then
+        cp "$src" "$dst"
+    fi
+done
+
 # Fix ownership after volume mount (uid 10000 = hermes).
 if [ "$(stat -c %u /data 2>/dev/null)" != "10000" ]; then
     chown -R 10000 /data
