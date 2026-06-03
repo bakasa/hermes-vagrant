@@ -29,12 +29,13 @@ if [ "$(stat -c %u /data 2>/dev/null)" != "10000" ]; then
     chown -R 10000 /data
 fi
 
-# Set model for each agent's HERMES_HOME — gateway run reads from state, not CLI flag.
-# hermes model set writes to HERMES_HOME/model (or equivalent state file).
+# Set default model via hermes config set — writes to config.yaml in each HERMES_HOME.
+# Must run before supervisord so the gateway reads the correct model on first message.
 for agent in main research subconscious coder qa alim; do
-    HERMES_HOME="/data/.hermes/${agent}" hermes model set openrouter/owl-alpha 2>/dev/null || true
+    HERMES_HOME="/data/.hermes/${agent}" HOME="/data" \
+        hermes config set model openrouter/owl-alpha 2>/dev/null || true
 done
-echo "hermes-crew: model set → openrouter/owl-alpha"
+echo "hermes-crew: model configured → openrouter/owl-alpha"
 
 # Railway injects PORT — main agent must bind it (hardcoded 3000 fails health checks).
 export PORT="${PORT:-3000}"
