@@ -8,13 +8,13 @@ openrouter:
 agent:
   name: "owl"
   role: "main"
-  model: "anthropic/claude-opus-4-20250514"
+  model: "openrouter/owl-alpha"
   port: 3000
 
 providers:
   openrouter:
     base_url: "https://openrouter.ai/api/v1"
-    model: "anthropic/claude-opus-4-20250514"
+    model: "openrouter/owl-alpha"
     api_key: "${OPENROUTER_API_KEY}"
 
 gateway:
